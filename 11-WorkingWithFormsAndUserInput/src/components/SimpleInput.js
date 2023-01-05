@@ -4,37 +4,59 @@ const SimpleInput = (props) => {
   const [name, setName] = useState("");
   const [isNameInputTouched, setIsNameInputTouched] = useState(false);
 
+  const [email, setEmail] = useState("");
+  const [isEmailInputTouched, setIsEmailInputTouched] = useState(false);
+
   const isNameValid = name.trim() !== "";
   const enteredNameisInvalid = !isNameValid && isNameInputTouched;
 
-  const onInputChangeHandler = (e) => {
+  const isEmailValid = email.includes("@");
+  const enteredEmailIsInvalid = !isEmailValid && isEmailInputTouched;
+
+  let isFormValid = false;
+
+  if (isNameValid && isEmailValid) {
+    isFormValid = true;
+  }
+
+  const onNameInputChangeHandler = (e) => {
     setName(e.target.value);
   };
-  const onInputBlurHandler = () => {
+  const onNameInputBlurHandler = () => {
     setIsNameInputTouched(true);
+  };
+
+  const onEmailInputHandelr = (e) => {
+    setEmail(e.target.value);
+  };
+  const onEmailBlurHandler = () => {
+    setIsEmailInputTouched(true);
   };
 
   const onSubmit = (e) => {
     e.preventDefault();
-    setIsNameInputTouched(true);
-    if (!isNameValid) {
-      return;
-    }
+
     console.log(name);
     setName("");
+    setEmail("");
     setIsNameInputTouched(false);
+    setIsEmailInputTouched(false);
   };
 
   const nameInputClasses = enteredNameisInvalid
     ? "form-control invalid"
     : "form-control ";
+  const emailInputClasses = enteredEmailIsInvalid
+    ? "form-control invalid"
+    : "form-control ";
+
   return (
     <form onSubmit={onSubmit}>
       <div className={nameInputClasses}>
         <label htmlFor="name">Your Name</label>
         <input
-          onChange={onInputChangeHandler}
-          onBlur={onInputBlurHandler}
+          onChange={onNameInputChangeHandler}
+          onBlur={onNameInputBlurHandler}
           type="text"
           id="name"
           value={name}
@@ -43,8 +65,21 @@ const SimpleInput = (props) => {
           <p className="error-text">Name must not be empty</p>
         )}
       </div>
+      <div className={emailInputClasses}>
+        <label htmlFor="email">Your E-mail</label>
+        <input
+          onChange={onEmailInputHandelr}
+          onBlur={onEmailBlurHandler}
+          type="email"
+          id="email"
+          value={email}
+        />
+        {enteredEmailIsInvalid && (
+          <p className="error-text">Email must not be empty</p>
+        )}
+      </div>
       <div className="form-actions">
-        <button>Submit</button>
+        <button disabled={!isFormValid}>Submit</button>
       </div>
     </form>
   );
