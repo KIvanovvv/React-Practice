@@ -34,18 +34,46 @@ import MealItem from "./MealItem/MealItem.js";
 
 function AvailableMeals() {
   const [meals, setMeals] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(null);
 
   useEffect(() => {
     const fetchMeals = async () => {
-      const respone = await fetch(
-        "http://react-http-5f055-default-rtdb.europe-west1.firebasedatabase.app/meals.json"
-      );
-      const data = await respone.json();
-      const fetchedMeals = Object.values(data);
-      setMeals(fetchedMeals);
+      try {
+        const respone = await fetch(
+          "http://react-http-5f055-default-rtdb.europe-west1.firebasedatabase.app/meals.json"
+        );
+        if (!respone.ok) {
+          throw new Error(`Something went wrong: Error ${respone.status}`);
+        }
+        if (respone.status === 204) {
+          throw new Error(`Your catalog is empty! `);
+        }
+        const data = await respone.json();
+        const fetchedMeals = Object.values(data);
+        setMeals(fetchedMeals);
+      } catch (error) {
+        setHasError(error.message);
+      }
     };
     fetchMeals();
+    setIsLoading(false);
   }, []);
+
+  if (isLoading) {
+    return (
+      <section className={classes.meals_loading}>
+        <p>Loading...</p>
+      </section>
+    );
+  }
+  if (hasError) {
+    return (
+      <section className={classes.meals_error}>
+        <p>{hasError}</p>
+      </section>
+    );
+  }
 
   const mealsList = meals.map((meal) => (
     <MealItem
