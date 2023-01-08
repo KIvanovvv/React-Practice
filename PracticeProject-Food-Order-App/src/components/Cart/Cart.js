@@ -8,6 +8,9 @@ import Checkout from "./Checkout.js";
 
 const Cart = (props) => {
   const [isCheckout, setIsCheckout] = useState(false);
+  const [isSubmiting, setIsSubmiting] = useState(false);
+  const [hasSubmited, setHasSubmited] = useState(false);
+  const [hasError, setHasError] = useState(null);
   const cartCtx = useContext(CartContext);
   const totalAmount = `${cartCtx.totalAmount.toFixed(2)}`;
   const hasItems = cartCtx.items.length > 0;
@@ -38,6 +41,35 @@ const Cart = (props) => {
     </ul>
   );
 
+  const orderSubmitHandler = async (userData) => {
+    setIsSubmiting(true);
+    try {
+      const response = await fetch(
+        `http://react-http-5f055-default-rtdb.europe-west1.firebasedatabase.app/orders.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: userData,
+            orderedItems: cartCtx.items,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Something went wrong please try again!`);
+      }
+      setIsSubmiting(false);
+      setHasSubmited(true);
+      cartCtx.resetCart();
+    } catch (error) {
+      setHasError(error.message);
+    }
+
+    console.log(userData);
+  };
+
   const modalControls = (
     <div className={classes.actions}>
       <button onClick={props.onClick} className={classes["button--alt"]}>
@@ -50,17 +82,44 @@ const Cart = (props) => {
       )}
     </div>
   );
-  return (
-    <Modal onBackdropClick={props.onClick}>
+
+  let content = (
+    <React.Fragment>
+      {" "}
       {cartItems}
       <div className={classes.total}>
         <span>Total Amount</span>
         <span>{totalAmount}</span>
       </div>
-      {isCheckout && <Checkout onCancel={props.onClick} />}
+      {isCheckout && (
+        <Checkout onCancel={props.onClick} onOrder={orderSubmitHandler} />
+      )}
       {!isCheckout && modalControls}
-    </Modal>
+    </React.Fragment>
   );
+  if (hasError) {
+    content = (
+      <div className={classes.actions}>
+        <p>{hasError}</p>
+      </div>
+    );
+  }
+  if (isSubmiting && !hasSubmited && !hasError) {
+    content = (
+      <div className={classes.actions}>
+        <p>Making your order. Please wait!</p>
+      </div>
+    );
+  }
+  if (hasSubmited && !isSubmiting) {
+    content = (
+      <div className={classes.actions}>
+        <p>Your order has been placed !</p>
+        <button onClick={props.onClick}>Close</button>
+      </div>
+    );
+  }
+  return <Modal onBackdropClick={props.onClick}>{content}</Modal>;
 };
 
 export default Cart;

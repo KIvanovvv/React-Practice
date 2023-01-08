@@ -138,11 +138,17 @@ const Checkout = (props) => {
     dispatch({ type: "SUBMITION" });
     if (!isFormValid) {
       console.log(`Inputs are invalid`);
-      console.log(inputs);
+      // console.log(inputs);
       return;
     }
+    props.onOrder({
+      name: inputs.name,
+      street: inputs.street,
+      postcode: inputs.postcode,
+      city: inputs.city,
+    });
     console.log(`Submited`);
-    console.log(inputs);
+    // console.log(inputs);
     dispatch({ type: "SUBMITED" });
   };
 
